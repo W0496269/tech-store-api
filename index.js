@@ -1,13 +1,13 @@
-const express = require('express');
-const session = require('express-session');
+import express from 'express';
+import session from 'express-session';
+import userRoutes from './routes/users.js';
+import productRoutes from './routes/products.js';
+
 const app = express();
 const port = 3000;
 
-app.use(express.json());
+app.use(express.json()); // Middleware to parse JSON bodies
 app.use(session({ secret: 'your_secret', resave: false, saveUninitialized: true }));
-
-const userRoutes = require('./routes/users');
-const productRoutes = require('./routes/products');
 
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);

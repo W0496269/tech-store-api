@@ -1,36 +1,26 @@
-const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 const router = express.Router();
 
-// Get All Products
 router.get('/all', async (req, res) => {
-  try {
-    const products = await prisma.product.findMany();
-    res.json(products);
-  } catch (error) {
-    res.status(500).send('Error fetching products');
-  }
+  const products = await prisma.product.findMany();
+  res.status(200).json(products);
 });
 
-// Get Product by ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  try {
-    const product = await prisma.product.findUnique({ where: { product_id: Number(id) } });
-    if (!product) {
-      return res.status(404).send('Product not found');
-    }
-    res.json(product);
-  } catch (error) {
-    res.status(500).send('Error fetching product');
+  const product = await prisma.product.findUnique({ where: { product_id: Number(id) } });
+  if (!product) {
+    return res.status(404).send('Product not found');
   }
+  res.status(200).json(product);
 });
 
-// Purchase Product
 router.post('/purchase', (req, res) => {
   // Handle product purchase logic
-  res.send('Product purchased');
+  res.status(200).send('Product purchased');
 });
 
-module.exports = router;
+export default router;
