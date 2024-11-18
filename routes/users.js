@@ -7,6 +7,8 @@ const router = express.Router();
 
 // Signup route
 router.post('/signup', async (req, res) => {
+  //console.log('Received signup request:', req.body); // Log the request body for debugging
+
   const { email, password, first_name, last_name } = req.body;
 
   // Check for blank fields
@@ -40,6 +42,8 @@ router.post('/signup', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
+  console.log('Received login request:', req.body); // Log the request body for debugging
+
   const { email, password } = req.body;
 
   // Check for blank fields
@@ -53,7 +57,6 @@ router.post('/login', async (req, res) => {
       where: { email: email },
     });
 
-    
     // If user is not found, return 404
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -64,10 +67,9 @@ router.post('/login', async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
+
     // Store user information in the session
     req.session.user = { email: user.email, first_name: user.first_name, last_name: user.last_name };
-    
 
     // If login is successful, return the user's email
     res.status(200).json({ message: 'Login successful', email: user.email });
@@ -78,8 +80,12 @@ router.post('/login', async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-  req.session.destroy();
-  res.send('Logged out');
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to log out' });
+    }
+    res.send('Logged out');
+  });
 });
 
 // Get Session
