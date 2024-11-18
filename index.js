@@ -13,6 +13,8 @@ const port = 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+ 
 
 // Session management
 app.use(session({
