@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const router = express.Router();
 
+//This route handler retrieves all products from the database using Prisma's findMany method
 router.get('/all', async (req, res) => {
   const products = await prisma.product.findMany();
   res.status(200).json(products);

@@ -17,10 +17,10 @@ router.post('/signup', async (req, res) => {
   }
 
   try {
-    // Hash the password
+    // Hash the password using bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save the new user in the database
+    // Saves the new user in the database using Prisma, with the hashed password
     const newUser = await prisma.customer.create({
       data: {
         email,
@@ -30,9 +30,11 @@ router.post('/signup', async (req, res) => {
       },
     });
 
+    //Returns a 201 status with a success message if the user is created successfully
     res.status(201).json({ message: 'User registered successfully', user: { email: newUser.email } });
   } catch (error) {
     if (error.code === 'P2002') { // Unique constraint violation for email
+      //Handles unique constraint violations (duplicate email) and other errors with appropriate status codes and messages
       res.status(400).json({ error: 'Email already in use' });
     } else {
       res.status(500).json({ error: 'Failed to register user' });
@@ -42,7 +44,7 @@ router.post('/signup', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
-  console.log('Received login request:', req.body); // Log the request body for debugging
+  console.log('Received login request:', req.body);
 
   const { email, password } = req.body;
 
