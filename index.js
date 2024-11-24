@@ -16,10 +16,9 @@ const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration
+// CORS middleware configuration
 app.use(cors({
   credentials: true,
-  origin: 'http://your-frontend-domain.com', // Replace with your frontend domain
 }));
 
 // Session management

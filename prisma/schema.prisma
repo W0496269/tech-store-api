@@ -7,6 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 model Customer {
   customer_id Int @id @default(autoincrement())
   email       String @unique
@@ -17,10 +18,11 @@ model Customer {
 }
 
 model Product {
-  product_id Int @id @default(autoincrement())
-  name       String
-  price      Float
-  purchaseItems PurchaseItem[]
+  product_id     Int     @id @default(autoincrement())
+  name           String
+  description    String
+  cost           Float 
+  image_filename String
 }
 
 model Purchase {
@@ -47,7 +49,7 @@ model PurchaseItem {
   product_id  Int
   quantity    Int
   purchase    Purchase @relation(fields: [purchase_id], references: [purchase_id])
-  product     Product @relation(fields: [product_id], references: [product_id])
+  //product     Product @relation(fields: [product_id], references: [product_id])
 
   @@id([purchase_id, product_id])
 }
