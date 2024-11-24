@@ -1,14 +1,21 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import PasswordValidator from 'password-validator';
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
+// Password policy
+const schema = new PasswordValidator();
+schema
+  .is().min(8)
+  .has().uppercase()
+  .has().lowercase()
+  .has().digits();
+
 // Signup route
 router.post('/signup', async (req, res) => {
-  //console.log('Received signup request:', req.body); // Log the request body for debugging
-
   const { email, password, first_name, last_name } = req.body;
 
   // Check for blank fields
@@ -16,11 +23,16 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
+  // Validate password
+  if (!schema.validate(password)) {
+    return res.status(400).json({ error: 'Password does not meet the policy requirements' });
+  }
+
   try {
-    // Hash the password using bcrypt
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Saves the new user in the database using Prisma, with the hashed password
+    // Save the new user in the database
     const newUser = await prisma.customer.create({
       data: {
         email,
@@ -30,11 +42,9 @@ router.post('/signup', async (req, res) => {
       },
     });
 
-    //Returns a 201 status with a success message if the user is created successfully
     res.status(201).json({ message: 'User registered successfully', user: { email: newUser.email } });
   } catch (error) {
     if (error.code === 'P2002') { // Unique constraint violation for email
-      //Handles unique constraint violations (duplicate email) and other errors with appropriate status codes and messages
       res.status(400).json({ error: 'Email already in use' });
     } else {
       res.status(500).json({ error: 'Failed to register user' });
@@ -44,8 +54,6 @@ router.post('/signup', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
-  console.log('Received login request:', req.body);
-
   const { email, password } = req.body;
 
   // Check for blank fields
@@ -71,7 +79,12 @@ router.post('/login', async (req, res) => {
     }
 
     // Store user information in the session
-    req.session.user = { email: user.email, first_name: user.first_name, last_name: user.last_name };
+    req.session.user = {
+      customer_id: user.customer_id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name
+    };
 
     // If login is successful, return the user's email
     res.status(200).json({ message: 'Login successful', email: user.email });
@@ -80,7 +93,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Logout
+// Logout route
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -90,7 +103,7 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// Get Session
+// Get Session route
 router.get('/getSession', (req, res) => {
   if (!req.session.user) {
     return res.status(401).send('No active session');

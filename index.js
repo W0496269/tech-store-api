@@ -1,5 +1,6 @@
 import express from 'express';
 import session from 'express-session';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import userRoutes from './routes/users.js';
@@ -14,7 +15,12 @@ const port = 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
- 
+
+// CORS configuration
+app.use(cors({
+  credentials: true,
+  origin: 'http://your-frontend-domain.com', // Replace with your frontend domain
+}));
 
 // Session management
 app.use(session({
