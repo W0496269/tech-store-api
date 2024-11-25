@@ -38,4 +38,52 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Route to handle purchase
+router.post('/purchase', isAuthenticated, async (req, res) => {
+  const { street, city, province, country, postal_code, credit_card, credit_expire, credit_cvv, cart, invoice_amt, invoice_tax, invoice_total } = req.body;
+  const customer_id = req.user.id;
+
+  try {
+    // Create a new purchase
+    const purchase = await prisma.purchase.create({
+      data: {
+        customer_id,
+        street,
+        city,
+        province,
+        country,
+        postal_code,
+        credit_card,
+        credit_expire,
+        credit_cvv,
+        invoice_amt,
+        invoice_tax,
+        invoice_total,
+      },
+    });
+
+    // Split the cart string into an array of product IDs
+    const productIds = cart.split(',').map(Number);
+    const purchaseItems = productIds.reduce((acc, productId) => {
+      const existingItem = acc.find(item => item.product_id === productId);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        acc.push({ purchase_id: purchase.purchase_id, product_id: productId, quantity: 1 });
+      }
+      return acc;
+    }, []);
+
+    // Create purchase items
+    await prisma.purchaseItem.createMany({
+      data: purchaseItems,
+    });
+
+    res.status(201).json({ message: 'Purchase completed successfully' });
+  } catch (error) {
+    console.error('Error completing purchase:', error);
+    res.status(500).json({ error: 'Failed to complete purchase' });
+  }
+});
+
 export default router;
