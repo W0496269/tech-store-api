@@ -100,7 +100,7 @@ await prisma.purchaseItem.createMany({
   data: purchaseItems,
 });
 
-res.status(201).json({ message: 'Purchase completed successfully' });
+res.status(201).json({ message: 'Purchase completed successfully', purchaseItems });
 } catch (error) {
 console.error('Error completing purchase:', error);
 res.status(500).json({ error: 'Failed to complete purchase' });
