@@ -13,7 +13,6 @@ model Product {
   description    String
   cost           Float 
   image_filename String
-  stock          Int             // New field added
   purchaseItems  PurchaseItem[]  // Add this line for the relation
 }
 
@@ -27,24 +26,25 @@ model Customer {
 }
 
 model Purchase {
-  purchase_id   Int             @id @default(autoincrement())
-  customer_id   Int
-  street        String
-  city          String
-  province      String
-  country       String
-  postal_code   String
-  credit_card   String
+  purchase_id  Int @id @default(autoincrement())
+  customer_id  Int
+  street       String
+  city         String
+  province     String
+  country      String
+  postal_code  String
+  credit_card  String
   credit_expire String
-  credit_cvv    String
-  cart          Int
-  invoice_amt   Float
-  invoice_tax   Float
-  invoice_total Float
-  order_date    DateTime        @default(now())
-  customer      Customer        @relation(fields: [customer_id], references: [customer_id])
-  items         PurchaseItem[]
+  credit_cvv   String
+  cart         String  // Added cart field
+  invoice_amt  String
+  invoice_tax  String
+  invoice_total String
+  order_date   DateTime @default(now())
+  customer     Customer @relation(fields: [customer_id], references: [customer_id])
+  items        PurchaseItem[]
 }
+
 
 model PurchaseItem {
   purchase_id Int

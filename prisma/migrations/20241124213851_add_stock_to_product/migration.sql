@@ -10,6 +10,7 @@ CREATE TABLE "Purchase" (
     "credit_card" TEXT NOT NULL,
     "credit_expire" TEXT NOT NULL,
     "credit_cvv" TEXT NOT NULL,
+    "cart" TEXT NOT NULL,
     "invoice_amt" TEXT NOT NULL,
     "invoice_tax" TEXT NOT NULL,
     "invoice_total" TEXT NOT NULL,
