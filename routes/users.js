@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 // Password policy
-const schema = new PasswordValidator();
+const schema = new PasswordValidator();  //https://www.npmjs.com/package/password-validator
 schema
   .is().min(8)
   .has().uppercase()
@@ -103,12 +103,17 @@ router.post('/logout', (req, res) => {
   });
 });
 
-// Get Session route
+// Get user session route
 router.get('/getSession', (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).send('No active session');
+  //return values in session for logged in user
+  if (req.session && req.session.user) {
+    const { user_id, email, first_name, last_name } = req.session.user
+    // const {user_id, email, name} = req.session.user;     / Using name instead of first_name + last_name
+    // return res.status(200).json({user_id, email, name}); // Using name instead of first_name + last_name
+    return res.status(200).json({ user_id, email, first_name, last_name })
   }
-  res.json(req.session.user);
-});
+  res.status(401).json({ message: 'No active session.' })
+})
+
 
 export default router;
