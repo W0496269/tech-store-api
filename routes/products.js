@@ -24,7 +24,7 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-    const product = await prisma.product.findUnique({  //https://www.w3schools.com/jsref/jsref_find.asp
+    const product = await prisma.product.findUnique({ //https://www.w3schools.com/jsref/jsref_find.asp
       where: { product_id: Number(id) },
     });
 
@@ -46,15 +46,14 @@ router.post('/purchase', async (req, res) => {
   }
 
   const { street, city, province, country, postal_code, credit_card, credit_expire, credit_cvv, cart, invoice_amt, invoice_tax, invoice_total } = req.body;
-  const customer_id = req.session.user.customer_id; 
+  const customer_id = req.session.user.customer_id; // Accessing customer_id from session
 
   try {
     // Split the cart string into an array of product IDs
-    const productIds = cart.split(',').map(Number);  //    //https://www.w3schools.com/jsref/jsref_map.asp
-
+    const productIds = cart.split(',').map(Number); // https://www.w3schools.com/jsref/jsref_map.asp
 
     // Check if all product IDs exist in the products table
-    const products = await prisma.product.findMany({  //https://www.w3schools.com/jsref/jsref_find.asp
+    const products = await prisma.product.findMany({ // https://www.w3schools.com/jsref/jsref_find.asp
       where: {
         product_id: {
           in: productIds,
@@ -86,13 +85,12 @@ router.post('/purchase', async (req, res) => {
     });
 
     // Prepare purchase items
-    //https://www.w3schools.com/jsref/jsref_reduce.asp
-    const purchaseItems = productIds.reduce((acc, productId) => {
-      const existingItem = acc.find(item => item.product_id === productId);  //https://www.w3schools.com/jsref/jsref_find.asp
+    const purchaseItems = productIds.reduce((acc, productId) => { // https://www.w3schools.com/jsref/jsref_reduce.asp
+      const existingItem = acc.find(item => item.product_id === productId); // https://www.w3schools.com/jsref/jsref_find.asp
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        acc.push({ purchase_id: purchase.purchase_id, product_id: productId, quantity: 1 });  //https://www.w3schools.com/jsref/jsref_push.asp
+        acc.push({ purchase_id: purchase.purchase_id, product_id: productId, quantity: 1 }); // https://www.w3schools.com/jsref/jsref_push.asp
       }
       return acc;
     }, []);
@@ -103,8 +101,7 @@ router.post('/purchase', async (req, res) => {
     });
 
     // Format the response data
-    //https://www.w3schools.com/jsref/jsref_map.asp
-    const responseItems = purchaseItems.map(item => ({
+    const responseItems = purchaseItems.map(item => ({ // https://www.w3schools.com/jsref/jsref_map.asp
       purchase_id: item.purchase_id,
       product_id: item.product_id,
       quantity: item.quantity,
