@@ -21,18 +21,20 @@ const Details = () => {
 
   return (
     <div>
-      {product && (
+      {product ? (
         <>
           <img src={product.image} alt={product.name} />
           <h2>{product.name}</h2>
           <p>${product.price}</p>
           <p>{product.description}</p>
           <button onClick={addToCart}>Add to Cart</button>
-          <Link to="/home">Go back</Link>
+          <Link to="/">Go back</Link>
         </>
+      ) : (
+        <p>Loading...</p>
       )}
     </div>
   );
-}
+};
 
 export default Details;

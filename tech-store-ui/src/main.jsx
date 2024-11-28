@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import App from '../App'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import App from './App'
 import Home from './routes/Home'
 import Details from './routes/Details'
 import Signup from './routes/Signup'
@@ -11,13 +12,24 @@ import Cart from './routes/Cart'
 import Checkout from './routes/Checkout'
 import Confirmation from './routes/Confirmation'
 
+
+const ErrorBoundary = () => {
+  const error = useRouteError();
+  return (
+    <div>
+      <h1>Oops! Something went wrong.</h1>
+      <p>{error.statusText || error.message}</p>
+    </div>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
     children: [
       { path: '/', element: <Home /> },
-      { path: 'details', element: <Details /> },
+      { path: 'details/:id', element: <Details /> },
       { path: 'signup', element: <Signup /> },
       { path: 'login', element: <Login /> },
       { path: 'logout', element: <Logout /> },

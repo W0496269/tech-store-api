@@ -1,56 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
-import { Link } from 'react-router-dom';
 
-const Cart = () => {
-  const [cookies] = useCookies(['cart']);
-  const [products, setProducts] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
+const Details = () => {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [cookies, setCookie] = useCookies(['cart']);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (cookies.cart) {
-      const productIds = cookies.cart.split(',');
-      fetch(`${import.meta.env.VITE_APP_HOST}/products`)
-        .then(response => response.json())
-        .then(data => {
-          const items = productIds.reduce((acc, id) => {
-            const product = data.find(p => p.id === parseInt(id));
-            if (product) {
-              const existingItem = acc.find(item => item.id === product.id);
-              if (existingItem) {
-                existingItem.quantity++;
-              } else {
-                acc.push({ ...product, quantity: 1 });
-              }
-            }
-            return acc;
-          }, []);
-          setCartItems(items);
-        });
-    }
-  }, [cookies.cart]);
+    fetch(`${import.meta.env.VITE_APP_HOST}/products/${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => setProduct(data))
+      .catch(error => setError(error.toString()));
+  }, [id]);
 
-  const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const addToCart = () => {
+    const cart = typeof cookies.cart === 'string' ? cookies.cart.split(',') : [];
+    cart.push(id);
+    setCookie('cart', cart.join(','), { path: '/' });
+  };
 
   return (
     <div>
-      <h2>Shopping Cart</h2>
-      <div>
-        {cartItems.map(item => (
-          <div key={item.id}>
-            <img src={item.thumbnail} alt={item.name} />
-            <h3>{item.name}</h3>
-            <p>${item.price}</p>
-            <p>Quantity: {item.quantity}</p>
-            <p>Total: ${item.price * item.quantity}</p>
-          </div>
-        ))}
-      </div>
-      <h3>Subtotal: ${subTotal}</h3>
-      <Link to="/home">Continue shopping</Link>
-      <Link to="/checkout">Complete purchase</Link>
+      {error && <p>Error: {error}</p>}
+      {product ? (
+        <>
+          <img src={product.image} alt={product.name} />
+          <h2>{product.name}</h2>
+          <p>${product.price}</p>
+          <p>{product.description}</p>
+          <button onClick={addToCart}>Add to Cart</button>
+          <Link to="/">Go back</Link>
+        </>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
-}
+};
 
-export default Cart;
+export default Details;
