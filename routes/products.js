@@ -50,30 +50,33 @@ router.post('/purchase', async (req, res) => {
 
   try {
     // Split the cart string into an array of product IDs
-    const cartItems = cart.split(',').map(Number) 
-    const productQuantity = {} 
+    const cartItems = cart.split(',').map(Number);
+    const productQuantity = {}; // Object to store quantity of each product
 
     // Count each product in the cart
     cartItems.forEach((productId) => {
       if (!productQuantity[productId]) {
-        productQuantity[productId] = 0
+        productQuantity[productId] = 0;
       }
-      productQuantity[productId]++
-    })
+      productQuantity[productId]++;
+    });
+
+    // Get the unique product IDs
+    const uniqueProductIds = Object.keys(productQuantity).map(Number);
 
     // Check if all product IDs exist in the products table
-    // const uniqueProductIds = Object.keys(productCount).map(Number);
-    // const products = await prisma.product.findMany({
-    //   where: {
-    //     product_id: {
-    //       in: uniqueProductIds,
-    //     },
-    //   },
-    // });
+    const products = await prisma.product.findMany({
+      where: {
+        product_id: {
+          in: uniqueProductIds,
+        },
+      },
+    });
 
-    // if (products.length !== uniqueProductIds.length) {
-    //   return res.status(400).json({ error: 'One or more products in the cart are invalid' });
-    // }
+    // Check if the products returned match the unique product IDs
+    if (products.length !== uniqueProductIds.length) {
+      return res.status(400).json({ error: 'One or more products in the cart are invalid' });
+    }
 
     // Create a new purchase
     const purchase = await prisma.purchase.create({
@@ -94,14 +97,14 @@ router.post('/purchase', async (req, res) => {
       },
     });
 
-    // Prepare purchase items
+    // Prepare purchase items with product quantities
     const purchaseItems = uniqueProductIds.map(productId => ({
       purchase_id: purchase.purchase_id,
       product_id: productId,
-      quantity: productCount[productId],
+      quantity: productQuantity[productId],
     }));
 
-    // Create purchase items
+    // Create purchase items in the database
     await prisma.purchaseItem.createMany({
       data: purchaseItems,
     });
