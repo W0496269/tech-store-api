@@ -2,16 +2,15 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import App from './App'
-import Home from './routes/Home'
-import Details from './routes/Details'
-import Signup from './routes/Signup'
-import Login from './routes/Login'
-import Logout from './routes/Logout'
-import Cart from './routes/Cart'
-import Checkout from './routes/Checkout'
-import Confirmation from './routes/Confirmation'
-
+import App from './App';
+import Home from './routes/Home';
+import Details from './routes/Details';
+import Signup from './routes/Signup';
+import Login from './routes/Login';
+import Logout from './routes/Logout';
+import Cart from './routes/Cart';
+import Checkout from './routes/Checkout';
+import Confirmation from './routes/Confirmation';
 
 const ErrorBoundary = () => {
   const error = useRouteError();

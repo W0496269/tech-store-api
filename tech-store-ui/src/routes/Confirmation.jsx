@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Confirmation() {
+const Confirmation = () => {
   return (
     <div>
       <h2>Confirmation Page</h2>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Checkout() {
+const Checkout = () => {
   return (
     <div>
       <h2>Checkout Page</h2>

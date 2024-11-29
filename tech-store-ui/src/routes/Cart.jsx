@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 const Cart = () => {
   const [cookies] = useCookies(['cart']);
-  const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [error, setError] = useState(null);
 
@@ -12,7 +11,7 @@ const Cart = () => {
     if (cookies.cart) {
       try {
         const productIds = cookies.cart.split(',');
-        fetch(`${import.meta.env.VITE_APP_HOST}/products`)
+        fetch(`${import.meta.env.VITE_API_HOST}/products`)
           .then(response => response.json())
           .then(data => {
             const items = productIds.reduce((acc, id) => {
