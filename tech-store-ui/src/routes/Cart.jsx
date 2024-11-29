@@ -29,14 +29,18 @@ const Cart = () => {
             }, []);
             setCartItems(items);
           })
-          .catch(error => setError('Failed to load products.'));
+          .catch(error => {
+            console.error('Failed to load products:', error);
+            setError('Failed to load products.');
+          });
       } catch (error) {
+        console.error('Invalid cart format:', error);
         setError('Invalid cart format.');
       }
     }
   }, [cookies.cart]);
 
-  const subTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+  const subTotal = cartItems.reduce((sum, item) => sum + item.cost * item.quantity, 0).toFixed(2);
 
   return (
     <div>
@@ -46,11 +50,11 @@ const Cart = () => {
         {cartItems.length > 0 ? (
           cartItems.map(item => (
             <div key={item.id}>
-              <img src={item.thumbnail} alt={item.name} width={50} />
+              <img src={`${import.meta.env.VITE_API_HOST}/images/${item.thumbnail}`} alt={item.name} width={50} />
               <h3>{item.name}</h3>
-              <p>${item.price}</p>
+              <p>${item.cost}</p>
               <p>Quantity: {item.quantity}</p>
-              <p>Total: ${(item.price * item.quantity).toFixed(2)}</p>
+              <p>Total: ${(item.cost * item.quantity).toFixed(2)}</p>
             </div>
           ))
         ) : (
