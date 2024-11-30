@@ -6,10 +6,10 @@ const Nav = () => {
     <nav>
       <ul style={{
         display: 'flex',
-        listStyle: 'none', // Removes default bullet points
-        padding: 0, // Removes default padding
-        margin: 0, // Removes default margin
-        justifyContent: 'center', // Centers the list items horizontally
+        listStyle: 'none', 
+        padding: 0, 
+        margin: 0, 
+        justifyContent: 'center', 
       }}>
         <li style={{ margin: '0 15px' }}>
           <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>Home</Link>

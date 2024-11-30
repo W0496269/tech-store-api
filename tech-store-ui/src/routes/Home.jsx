@@ -8,7 +8,7 @@ const Home = () => {
     fetch(`${import.meta.env.VITE_API_HOST}/products/all`)
       .then(response => response.json())
       .then(data => {
-        console.log('Fetched products:', data); // Add this line
+        console.log('Fetched products:', data);
         setProducts(data);
       })
       .catch(error => console.error('Error fetching products:', error));
