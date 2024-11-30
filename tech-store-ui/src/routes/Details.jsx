@@ -44,31 +44,38 @@ const Details = () => {
           <h2>{product.name}</h2>
           <p>${product.cost.toFixed(2)}</p>
           <p>{product.description}</p>
-          <button
-            onClick={addToCart}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            Add to Cart
-          </button>
-          <button
-            onClick={goBack}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              marginTop: '20px',
-            }}
-          >
-            Go Back
-          </button>
+
+    <div style={{ display: 'flex', gap: '20px' }}></div>
+    <Link
+    to="#"
+    onClick={addToCart} // Trigger the addToCart function
+    style={{
+    padding: '10px 20px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    textDecoration: 'none', // remove default underline from Link
+    borderRadius: '20px',
+    display: 'inline-block',
+  }}
+  >
+    Add to Cart
+    </Link>
+
+    <Link
+    to="/" // Navigate to the home page when clicked
+    style={{
+    padding: '10px 20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    textDecoration: 'none', // remove default underline from Link
+    borderRadius: '20px',
+    marginTop: '20px',
+    display: 'inline-block',
+  }}
+  >
+    Go Back
+    </Link>
+
         </>
       ) : (
         <p>Loading...</p>
