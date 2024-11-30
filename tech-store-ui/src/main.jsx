@@ -12,15 +12,6 @@ import Cart from './routes/Cart';
 import Checkout from './routes/Checkout';
 import Confirmation from './routes/Confirmation';
 
-const ErrorBoundary = () => {
-  const error = useRouteError();
-  return (
-    <div>
-      <h1>Oops! Something went wrong.</h1>
-      <p>{error.statusText || error.message}</p>
-    </div>
-  );
-};
 
 const router = createBrowserRouter([
   {

@@ -6,7 +6,7 @@ const App = () => {
   return (
     <div>
       <Nav />
-      <h1>Welcome to My Tech Store</h1>
+      <h1 style={{ textAlign: 'center', margin: '20px 0' }}>Welcome to My Tech Store</h1>
       <Outlet />
     </div>
   );
