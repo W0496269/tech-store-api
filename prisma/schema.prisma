@@ -37,9 +37,6 @@ model Purchase {
   credit_expire String
   credit_cvv   String
   cart         String  // Added cart field
-  invoice_amt  String
-  invoice_tax  String
-  invoice_total String
   order_date   DateTime @default(now())
   customer     Customer @relation(fields: [customer_id], references: [customer_id])
   items        PurchaseItem[]

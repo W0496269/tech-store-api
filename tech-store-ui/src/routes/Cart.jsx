@@ -1,142 +1,211 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import { Link } from 'react-router-dom';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const apiUrl = import.meta.env.VITE_API_HOST;
 
 const Cart = () => {
-  const [cookies] = useCookies(['cart']); // Get the cart cookie
-  const [cartItems, setCartItems] = useState([]); // State to store cart items
-  const [error, setError] = useState(null); // State to handle error messages
+  const [cookies, setCookie, removeCookie] = useCookies(['cart']);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch product details when the cart cookie changes
   useEffect(() => {
-    if (!cookies.cart) return; // If no cart cookie, do nothing
-
-    // Log cookies.cart to debug if cart has product IDs
-    console.log("Cart Cookie:", cookies.cart);
-
-    // Split the cart cookie string into an array of product IDs
-    const productIds = cookies.cart.split(',');
-
-    if (productIds.length === 0) return; // If no product IDs in the cart, do nothing
-
-    // Fetch product details for the product IDs in the cart
-    //https://www.w3schools.com/js/js_api_fetch.asp
-    fetch(`${import.meta.env.VITE_API_HOST}/products?ids=${productIds.join(',')}`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch product details');
-        }
-        return response.json();
-      })
-      .then(products => {
-        // Log products to debug the response
-        console.log('Fetched Products:', products);
-
-        // If no products are found, return early
-        if (!Array.isArray(products) || products.length === 0) {
-          setError('No products found.');
+    async function fetchCartItems() {
+      try {
+        const productIds = cookies.cart ? String(cookies.cart).split(',') : [];
+        if (productIds.length === 0) {
+          setCartItems([]);
+          setLoading(false);
           return;
         }
 
-        // Create a map to store the quantity of each product
-        const productMap = {};
-        productIds.forEach(id => {
-          if (!productMap[id]) {
-            productMap[id] = 0;
-          }
-          productMap[id]++; // Count the number of occurrences of each product ID
+        const productCount = {};
+        productIds.forEach((id) => {
+          productCount[id] = (productCount[id] || 0) + 1;
         });
 
-        // Map the product data to include quantity for each product
-        const updatedCart = products.map(product => ({
-          ...product,
-          quantity: productMap[product.product_id], // Add the quantity for the product
-        }));
+        const uniqueProductIds = [...new Set(productIds)];
+        const productsWithQuantities = [];
 
-        setCartItems(updatedCart); // Update the state with the fetched cart items
-      })
-      .catch(error => {
-        setError('Failed to load products.');
-        console.error('Error fetching products:', error);
-      });
-  }, [cookies.cart]); // Re-run when the cart cookie changes
+        for (const id of uniqueProductIds) {
+          const response = await fetch(`${apiUrl}/products/${id}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch product details');
+          }
+          const product = await response.json();
+          productsWithQuantities.push({
+            ...product,
+            quantity: productCount[product.product_id],
+          });
+        }
 
-  // Calculate the total price of all cart items (subtotal)
-  const subTotal = cartItems.reduce((sum, item) => sum + item.cost * item.quantity, 0).toFixed(2);
+        setCartItems(productsWithQuantities);
+      } catch (error) {
+        console.error('Error fetching cart items:', error);
+        setError('Error fetching cart items. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCartItems();
+  }, [cookies.cart]);
 
-  // Calculate the total cost for each product (price * quantity)
-  const calculateItemTotal = (cost, quantity) => (cost * quantity).toFixed(2);
+  const updateCart = (productId, increment) => {
+    const currentCart = cookies.cart ? String(cookies.cart).split(',') : [];
+    let updatedCart = [...currentCart];
+
+    if (increment) {
+      updatedCart.push(productId.toString());
+    } else {
+      const index = updatedCart.indexOf(productId.toString());
+      if (index > -1) {
+        updatedCart.splice(index, 1);
+      }
+    }
+
+    if (updatedCart.length === 0) {
+      removeCookie('cart', { path: '/' });
+    } else {
+      setCookie('cart', updatedCart.join(','), { path: '/', maxAge: 3600000 });
+    }
+  };
+
+  const removeItem = (productId) => {
+    const currentCart = cookies.cart ? String(cookies.cart).split(',') : [];
+    const updatedCart = currentCart.filter((id) => id !== productId.toString());
+
+    if (updatedCart.length === 0) {
+      removeCookie('cart', { path: '/' });
+    } else {
+      setCookie('cart', updatedCart.join(','), { path: '/', maxAge: 3600000 });
+    }
+  };
+
+  const calculateSubtotal = () => {
+    return cartItems.reduce((total, item) => total + item.cost * item.quantity, 0);
+  };
+
+  const calculateTax = (subtotal) => {
+    return subtotal * 0.15;
+  };
+
+  const calculateTotal = (subtotal, tax) => {
+    return subtotal + tax;
+  };
+
+  if (loading) return <p className="text-center">Loading your cart...</p>;
+  if (error) return <p className="text-danger text-center">{error}</p>;
+
+  const subtotal = calculateSubtotal();
+  const tax = calculateTax(subtotal);
+  const total = calculateTotal(subtotal, tax);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Shopping Cart</h2>
-
-      {/* Display error message if there's an error */}
-      {error && <p>{error}</p>}
-
-      {/* If there are items in the cart, display them */}
-      {cartItems.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Iterate over each cart item and display its details */}
-          {cartItems.map(item => (
-            <div
-              key={item.product_id} // Ensure product_id is used for the unique key
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px',
-                border: '1px solid #ddd',
-                padding: '10px',
-                borderRadius: '8px',
-              }}
-            >
-              {/* Display the product image */}
-              <img
-                src={`${import.meta.env.VITE_API_HOST}/images/${item.image_filename}`}
-                alt={item.name}
-                style={{ width: '80px', height: 'auto', objectFit: 'cover', borderRadius: '8px' }}
-              />
-              <div style={{ flex: '1' }}>
-                {/* Display the product name, cost, quantity, and total cost */}
-                <h3>{item.name}</h3>
-                <p>${item.cost.toFixed(2)}</p>
-                <p>Quantity: {item.quantity}</p>
-                {/* Calculate and display the total cost for each item (price × quantity) */}
-                <p>Total: ${calculateItemTotal(item.cost, item.quantity)}</p>
-              </div>
+    <div className="container my-5">
+      <div className="bg-light p-4 rounded shadow-lg">
+        <h1 className="text-center display-4 text-primary mb-4">Your Shopping Cart</h1>
+        {cartItems.length === 0 ? (
+          <p className="text-center">
+            Cart is empty. <Link to="/home">Start shopping!</Link>
+          </p>
+        ) : (
+          <div>
+            <div className="row">
+              {cartItems.map((item) => (
+                <div key={item.product_id} className="col-12 mb-4">
+                  <div className="card shadow-sm">
+                    <div className="row g-0 align-items-center">
+                      <div className="col-md-3 d-flex justify-content-center align-items-center">
+                        <img
+                          src={`${apiUrl}/images/${item.image_filename}`}
+                          alt={item.name}
+                          className="img-fluid rounded shadow-lg mt-2"
+                          style={{ maxHeight: '100px', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div className="col-md-9">
+                        <div className="card-body d-flex justify-content-between">
+                          <div>
+                            <h5 className="card-title">{item.name}</h5>
+                            <p>
+                              Price: $
+                              {item.cost.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                            <p>Quantity: {item.quantity}</p>
+                            <div className="btn-group">
+                              <button
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => updateCart(item.product_id, true)}
+                              >
+                                +
+                              </button>
+                              <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => updateCart(item.product_id, false)}
+                              >
+                                -
+                              </button>
+                              <button
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => removeItem(item.product_id)}
+                              >
+                                X
+                              </button>
+                            </div>
+                          </div>
+                          <p>
+                            Total: $
+                            {(item.cost * item.quantity).toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-          {/* Display the subtotal of all cart items */}
-          <h3 style={{ marginTop: '20px' }}>Subtotal: ${subTotal}</h3>
-        </div>
-      ) : (
-        <p>Your cart is empty.</p> // If no items in the cart, show this message
-      )}
-
-      {/* Display links for continuing shopping or completing the purchase */}
-      <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-        <Link
-          to="/"
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#4CAF50',
-            color: '#fff',
-            borderRadius: '5px',
-          }}
-        >
-          Continue shopping
-        </Link>
-        <Link
-          to="/checkout"
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#FF6347',
-            color: '#fff',
-            borderRadius: '5px',
-          }}
-        >
-          Complete purchase
-        </Link>
+            <div className="mt-4">
+              <h4>
+                Subtotal: $
+                {subtotal.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </h4>
+              <h5>
+                Tax: $
+                {tax.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </h5>
+              <h3>
+                Total: $
+                {total.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </h3>
+            </div>
+            <div className="mt-3 d-flex justify-content-between">
+              <Link to="/home" className="btn btn-secondary">
+                Continue Shopping
+              </Link>
+              <Link to="/checkout" className="btn btn-primary">
+                Checkout
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
