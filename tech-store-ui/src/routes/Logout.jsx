@@ -1,29 +1,24 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 
 const Logout = () => {
+  const { setIsLoggedIn } = useOutletContext();  // Access setIsLoggedIn from context
   const navigate = useNavigate();
-  const setIsLoggedIn = useOutletContext();
 
   useEffect(() => {
-    const logout = async () => {
+    const logoutUser = async () => {
       try {
-        const response = await fetch('/api/logout', {
-          method: 'POST',
-        });
-
-        if (!response.ok) {
-          throw new Error('Logout failed');
-        }
-
-        setIsLoggedIn(false);
-        navigate('/');
+        // Clear user token from localStorage
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);  // Set isLoggedIn flag to false
+        navigate('/');  // Redirect to home or login page
       } catch (error) {
-        alert(error.message);
+        console.error('Logout error:', error);
       }
     };
 
-    logout();
+    logoutUser();
   }, [setIsLoggedIn, navigate]);
 
   return <p>Logging out...</p>;

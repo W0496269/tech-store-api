@@ -7,7 +7,7 @@ import { useOutletContext } from 'react-router-dom';
 const apiUrl = import.meta.env.VITE_API_HOST;
 
 export default function Login() {
-  const { setIsLoggedIn } = useOutletContext();
+  const { setIsLoggedIn } = useOutletContext(); // Access setIsLoggedIn from context
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [serverError, setServerError] = useState('');
   const [cookies, setCookies] = useCookies(['cart', 'user']);
@@ -15,28 +15,28 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     setServerError('');
-    
+
     try {
       const response = await fetch(`${apiUrl}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-        credentials: 'include',  // Include cookies in request
+        credentials: 'include', // Include cookies in request
       });
-    
+
       const result = await response.json();
-    
+
       if (!response.ok) {
         setServerError(result.error || 'Invalid credentials');
         return;
       }
-    
+
       setCookies('user', result.user, { path: '/' });
-      setIsLoggedIn(true);
-      
+      setIsLoggedIn(true); // Update login state
+
       // Log the cookies
       console.log(cookies);
-    
+
       const cartItems = cookies.cart ? cookies.cart.split(",") : [];
       if (cartItems.length > 0) {
         navigate("/cart");
@@ -44,12 +44,10 @@ export default function Login() {
         navigate("/home");
       }
     } catch (error) {
-      console.error('Login error:', error);  // Log the error details
+      console.error('Login error:', error); // Log the error details
       setServerError('An unexpected error occurred. Please try again later.');
     }
-    
   };
-  
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">

@@ -8,7 +8,7 @@ const apiUrl = import.meta.env.VITE_API_HOST;
 const Checkout = () => {
   const [cookies, setCookies, removeCookies] = useCookies(['cart', 'user']);
   const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
@@ -68,21 +68,9 @@ const Checkout = () => {
     fetchCartItems();
   }, [cookies.cart]);
 
-  // Calculate the subtotal, tax, and total
-  const calculateSubtotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.cost * item.quantity,
-      0
-    );
-  };
-
-  const subtotal = calculateSubtotal();
-  const tax = subtotal * 0.15;
-  const total = subtotal + tax;
-
   // Handle checkout form submission
   const onSubmit = async (data) => {
-    setLoading(true);  // show loading indicator
+    setLoading(true);  // Show loading indicator
     try {
       const response = await fetch(`${apiUrl}/products/purchase`, {
         method: 'POST',
@@ -95,7 +83,7 @@ const Checkout = () => {
       });
 
       if (response.ok) {
-        // Clear cart and navigate to confirmation page
+        // Clear cart and redirect to confirmation page
         removeCookies('cart', { path: '/' });
         navigate('/confirmation');
       } else {
@@ -103,10 +91,10 @@ const Checkout = () => {
         setError(errorData.error || 'Failed to complete purchase');
       }
     } catch (error) {
-      //console.error('Error during purchase:', error);
+      console.error('Error during purchase:', error);
       setError('An unexpected error occurred. Please try again later.');
     } finally {
-      setLoading(false);  // hide loading indicator
+      setLoading(false);  // Hide loading indicator
     }
   };
 
@@ -139,104 +127,12 @@ const Checkout = () => {
                 </li>
               ))}
             </ul>
-            <div className="mt-3">
-              <p><strong>Subtotal:</strong> ${subtotal.toFixed(2)}</p>
-              <p><strong>Tax:</strong> ${tax.toFixed(2)}</p>
-              <p><strong>Total:</strong> ${total.toFixed(2)}</p>
-            </div>
           </div>
         )}
 
         {/* Checkout Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="form-group mb-3">
-            <label htmlFor="street">Street</label>
-            <input
-              type="text"
-              id="street"
-              className="form-control"
-              {...register('street', { required: 'Street is required' })}
-            />
-            {errors.street && <p className="text-danger">{errors.street.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="city">City</label>
-            <input
-              type="text"
-              id="city"
-              className="form-control"
-              {...register('city', { required: 'City is required' })}
-            />
-            {errors.city && <p className="text-danger">{errors.city.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="province">Province</label>
-            <input
-              type="text"
-              id="province"
-              className="form-control"
-              {...register('province', { required: 'Province is required' })}
-            />
-            {errors.province && <p className="text-danger">{errors.province.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="country">Country</label>
-            <input
-              type="text"
-              id="country"
-              className="form-control"
-              {...register('country', { required: 'Country is required' })}
-            />
-            {errors.country && <p className="text-danger">{errors.country.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="postal_code">Postal Code</label>
-            <input
-              type="text"
-              id="postal_code"
-              className="form-control"
-              {...register('postal_code', { required: 'Postal Code is required' })}
-            />
-            {errors.postal_code && <p className="text-danger">{errors.postal_code.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="credit_card">Credit Card</label>
-            <input
-              type="text"
-              id="credit_card"
-              className="form-control"
-              {...register('credit_card', { required: 'Credit Card is required' })}
-            />
-            {errors.credit_card && <p className="text-danger">{errors.credit_card.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="credit_expire">Expiration Date</label>
-            <input
-              type="text"
-              id="credit_expire"
-              className="form-control"
-              {...register('credit_expire', { required: 'Expiration Date is required' })}
-            />
-            {errors.credit_expire && <p className="text-danger">{errors.credit_expire.message}</p>}
-          </div>
-
-          <div className="form-group mb-3">
-            <label htmlFor="credit_cvv">CVV</label>
-            <input
-              type="text"
-              id="credit_cvv"
-              className="form-control"
-              {...register('credit_cvv', { required: 'CVV is required' })}
-            />
-            {errors.credit_cvv && <p className="text-danger">{errors.credit_cvv.message}</p>}
-          </div>
-
+          {/* Form fields for address, payment, etc. */}
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? 'Processing...' : 'Complete Purchase'}
           </button>

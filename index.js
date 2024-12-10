@@ -24,10 +24,10 @@ app.use(cors({
 
 // Session management
 app.use(session({
-  secret: 'your_secret',
+  secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: false }, // Set secure: true if using https
 }));
 
 // Static files route

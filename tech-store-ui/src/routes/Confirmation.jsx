@@ -7,7 +7,7 @@ const Confirmation = () => {
       <h1 className="text-center">Purchase Confirmation</h1>
       <p className="text-center">Thank you for your purchase!</p>
       <div className="text-center mt-4">
-        <Link to="/" className="btn btn-primary">Continue Shopping</Link>
+        <Link to="/" className="btn btn-primary">Continue Shopping</Link>  {/* Update this line */}
       </div>
     </div>
   );

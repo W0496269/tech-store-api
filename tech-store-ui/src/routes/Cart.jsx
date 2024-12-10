@@ -197,7 +197,7 @@ const Cart = () => {
               </h3>
             </div>
             <div className="mt-3 d-flex justify-content-between">
-              <Link to="/home" className="btn btn-secondary">
+              <Link to="/" className="btn btn-secondary">
                 Continue Shopping
               </Link>
               <Link to="/checkout" className="btn btn-primary">
