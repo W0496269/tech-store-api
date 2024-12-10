@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 const apiUrl = import.meta.env.VITE_API_HOST;
 
 const Checkout = () => {
-  const [cookies, setCookies, removeCookies] = useCookies(['cart', 'user']);
+  const [cookies, setCookie, removeCookie] = useCookies(['cart', 'user']);
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -84,7 +84,7 @@ const Checkout = () => {
 
       if (response.ok) {
         // Clear cart and redirect to confirmation page
-        removeCookies('cart', { path: '/' });
+        removeCookie('cart', { path: '/' });
         navigate('/confirmation');
       } else {
         const errorData = await response.json();
@@ -132,7 +132,90 @@ const Checkout = () => {
 
         {/* Checkout Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Form fields for address, payment, etc. */}
+          {/* Address Fields */}
+          <div className="form-group">
+            <label htmlFor="street">Street</label>
+            <input
+              id="street"
+              type="text"
+              className="form-control"
+              {...register('street', { required: 'Street is required' })}
+            />
+            {errors.street && <span className="text-danger">{errors.street.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="city">City</label>
+            <input
+              id="city"
+              type="text"
+              className="form-control"
+              {...register('city', { required: 'City is required' })}
+            />
+            {errors.city && <span className="text-danger">{errors.city.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="province">Province</label>
+            <input
+              id="province"
+              type="text"
+              className="form-control"
+              {...register('province', { required: 'Province is required' })}
+            />
+            {errors.province && <span className="text-danger">{errors.province.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="country">Country</label>
+            <input
+              id="country"
+              type="text"
+              className="form-control"
+              {...register('country', { required: 'Country is required' })}
+            />
+            {errors.country && <span className="text-danger">{errors.country.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="postal_code">Postal Code</label>
+            <input
+              id="postal_code"
+              type="text"
+              className="form-control"
+              {...register('postal_code', { required: 'Postal code is required' })}
+            />
+            {errors.postal_code && <span className="text-danger">{errors.postal_code.message}</span>}
+          </div>
+
+          {/* Credit Card Fields */}
+          <div className="form-group">
+            <label htmlFor="credit_card">Card Number</label>
+            <input
+              id="credit_card"
+              type="text"
+              className="form-control"
+              {...register('credit_card', { required: 'Card number is required' })}
+            />
+            {errors.credit_card && <span className="text-danger">{errors.credit_card.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="credit_expire">Expiry Date</label>
+            <input
+              id="credit_expire"
+              type="text"
+              className="form-control"
+              {...register('credit_expire', { required: 'Expiry date is required' })}
+            />
+            {errors.credit_expire && <span className="text-danger">{errors.credit_expire.message}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="credit_cvv">CVV</label>
+            <input
+              id="credit_cvv"
+              type="text"
+              className="form-control"
+              {...register('credit_cvv', { required: 'CVV is required' })}
+            />
+            {errors.credit_cvv && <span className="text-danger">{errors.credit_cvv.message}</span>}
+          </div>
+
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? 'Processing...' : 'Complete Purchase'}
           </button>

@@ -39,39 +39,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // Route to handle purchase
-router.post('/purchase', async (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: 'Must be authorized.' });
+router.post('/products/purchase', authenticateToken, async (req, res) => {
+  const { customer_id, street, city, province, country, postal_code, credit_card, credit_expire, credit_cvv, cart } = req.body;
+
+  // Validate all required fields are provided
+  if (!customer_id || !street || !city || !province || !country || !postal_code || !credit_card || !credit_expire || !credit_cvv || !cart) {
+    return res.status(400).json({ error: 'All fields are required' });
   }
 
-  const { street, city, province, country, postal_code, credit_card, credit_expire, credit_cvv, cart } = req.body;
-  const customer_id = req.session.user.customer_id;
-
   try {
-    const cartItems = cart.split(',').map(Number);
-    const productQuantity = {};
-
-    cartItems.forEach(productId => {
-      if (!productQuantity[productId]) {
-        productQuantity[productId] = 0;
-      }
-      productQuantity[productId]++;
-    });
-
-    const uniqueProductIds = Object.keys(productQuantity).map(Number);
-
-    const products = await prisma.product.findMany({
-      where: {
-        product_id: {
-          in: uniqueProductIds,
-        },
-      },
-    });
-
-    if (products.length !== uniqueProductIds.length) {
-      return res.status(400).json({ error: 'One or more products in the cart are invalid' });
-    }
-
     const purchase = await prisma.purchase.create({
       data: {
         customer_id,
@@ -86,26 +62,11 @@ router.post('/purchase', async (req, res) => {
         cart,
       },
     });
-
-    const purchaseItems = uniqueProductIds.map(productId => ({
-      purchase_id: purchase.purchase_id,
-      product_id: productId,
-      quantity: productQuantity[productId],
-    }));
-
-    await prisma.purchaseItem.createMany({
-      data: purchaseItems,
-    });
-
-    res.status(201).json({
-      message: 'Purchase completed successfully',
-      purchase_id: purchase.purchase_id,
-      items: purchaseItems,
-    });
+    res.status(201).json(purchase);
   } catch (error) {
-    console.error('Error completing purchase:', error);
+    console.error('Error creating purchase:', error);
     res.status(500).json({ error: 'Failed to complete purchase' });
   }
 });
 
-export default router;
+module.exports = router;
