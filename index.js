@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // CORS middleware configuration
 app.use(cors({
   origin: 'http://localhost:5173', // Specify the frontend URL
+  methods: ['GET', 'POST', 'DELETE'],
   credentials: true,
 }));
 
