@@ -3,45 +3,56 @@ import { useNavigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import { useForm } from 'react-hook-form';
 
+// Base API URL from environment variables
 const apiUrl = import.meta.env.VITE_API_HOST;
 
 const Checkout = () => {
+  // Initialize cookies and state for cart and user information
   const [cookies, setCookie, removeCookie] = useCookies(['cart', 'user']);
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const { register, handleSubmit, formState: { errors } } = useForm();
-  const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);  // To store the items in the cart
+  const [loading, setLoading] = useState(false);  // Loading state for UI feedback
+  const [error, setError] = useState(null);  // To handle any errors
+  const { register, handleSubmit, formState: { errors } } = useForm();  // React Hook Form to manage form
+  const navigate = useNavigate();  // Hook to navigate to different pages
 
-  // Check if user is logged in
-  const user = cookies.user;
+  // Check if user is logged in based on the cookies
+  const user = cookies.user;  // Get user from cookies
   if (!user) {
-    const redirectUrl = encodeURIComponent('/checkout');
+    // If no user is logged in, redirect to the login page
+    const redirectUrl = encodeURIComponent('/checkout');  // URL-encode the checkout path
     return (
       <div className="text-center">
         <p>You need to be logged in to checkout.</p>
+        {/* Redirect to login page with a return URL after successful login */}
         <a href={`/login?redirect=${redirectUrl}`} className="btn btn-primary">Login</a>
       </div>
     );
   }
 
-  // Fetch cart items from API
+  // Fetch cart items from the API
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
+        // Get product IDs from the cart cookie
         const productIds = cookies.cart ? String(cookies.cart).split(',') : [];
+        
+        // If there are no items in the cart, stop further processing
         if (productIds.length === 0) {
           setCartItems([]);
           setLoading(false);
           return;
         }
 
+        // Count the quantity of each product in the cart
         const productCount = {};
         productIds.forEach(id => {
           productCount[id] = (productCount[id] || 0) + 1;
         });
 
+        // Get the unique product IDs
         const uniqueProductIds = [...new Set(productIds)];
+        
+        // Fetch product details from the API and add quantity info
         const productsWithQuantities = await Promise.all(
           uniqueProductIds.map(async (id) => {
             const response = await fetch(`${apiUrl}/products/${id}`);
@@ -51,42 +62,47 @@ const Checkout = () => {
             const product = await response.json();
             return {
               ...product,
-              quantity: productCount[product.product_id],
+              quantity: productCount[product.product_id],  // Add the quantity for each product
             };
           })
         );
 
+        // Set the cart items state
         setCartItems(productsWithQuantities);
       } catch (error) {
         console.error('Error fetching cart items:', error);
         setError('Error fetching cart items. Please try again.');
       } finally {
-        setLoading(false);
+        setLoading(false);  // Stop loading after fetch completes
       }
     };
 
-    fetchCartItems();
-  }, [cookies.cart]);
+    fetchCartItems();  // Call the fetch function when component mounts
+  }, [cookies.cart]);  // Re-run if cart changes
 
-  // Handle checkout form submission
+  // Handle form submission for checkout
   const onSubmit = async (data) => {
-    setLoading(true);  // Show loading indicator
+    setLoading(true);  // Show loading indicator while processing the payment
     try {
+      // Send checkout data to the API
       const response = await fetch(`${apiUrl}/products/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        credentials: 'include',  // Ensure cookies are sent with the request
         body: JSON.stringify({
-          ...data,
-          cart: cookies.cart,
+          ...data,  // Spread the form data
+          cart: cookies.cart,  // Include the cart items
         }),
       });
 
+      // If the purchase was successful
       if (response.ok) {
-        // Clear cart and redirect to confirmation page
+        // Clear the cart cookies after successful purchase
         removeCookie('cart', { path: '/' });
+        // Redirect the user to the confirmation page
         navigate('/confirmation');
       } else {
+        // If an error occurred, display the error message
         const errorData = await response.json();
         setError(errorData.error || 'Failed to complete purchase');
       }
@@ -94,7 +110,7 @@ const Checkout = () => {
       console.error('Error during purchase:', error);
       setError('An unexpected error occurred. Please try again later.');
     } finally {
-      setLoading(false);  // Hide loading indicator
+      setLoading(false);  // Hide loading indicator after processing
     }
   };
 
@@ -107,7 +123,7 @@ const Checkout = () => {
         {loading ? (
           <p>Loading cart items...</p>
         ) : error ? (
-          <div className="alert alert-danger">{error}</div>
+          <div className="alert alert-danger">{error}</div>  // Show error message if any
         ) : (
           <div className="mb-4">
             <h4>Your Order Summary</h4>
@@ -116,13 +132,13 @@ const Checkout = () => {
                 <li key={item.product_id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div>
                     <strong>{item.name}</strong> <br />
-                    Quantity: {item.quantity}
+                    Quantity: {item.quantity}  {/* Display item name and quantity */}
                   </div>
                   <div>
                     ${Number(item.cost * item.quantity).toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    })}
+                    })}  {/* Show the total cost for this item */}
                   </div>
                 </li>
               ))}
@@ -139,7 +155,7 @@ const Checkout = () => {
               id="street"
               type="text"
               className="form-control"
-              {...register('street', { required: 'Street is required' })}
+              {...register('street', { required: 'Street is required' })}  // Field validation with react-hook-form
             />
             {errors.street && <span className="text-danger">{errors.street.message}</span>}
           </div>
